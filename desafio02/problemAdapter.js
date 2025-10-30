@@ -1,8 +1,17 @@
+
+class PaymentProcessor {
+  processPayment(amount) {
+    console.log(`Pagamento de R$${amount} processado pelo sistema interno.`);
+  }
+}
+
+
 class LegacyPaymentSystem {
   makePayment(amount) {
     console.log(`Pagando R$${amount} com sistema legado.`);
   }
 }
+
 
 class ModernPaymentAPI {
   process(amountInCents) {
@@ -10,17 +19,35 @@ class ModernPaymentAPI {
   }
 }
 
-class PaymentProcessor {
-  constructor(system) {
-    this.system = system;
+
+class ModernPaymentAdapter extends PaymentProcessor {
+  constructor(modernAPI) {
+    super();
+    this.modernAPI = modernAPI;
   }
 
-  pay(amount) {
-    this.system.makePayment(amount);
+  processPayment(amount) {
+  
+    const amountInCents = amount * 100;
+    this.modernAPI.process(amountInCents);
   }
 }
 
-// Cliente
+
+function payOrder(processor, amount) {
+  processor.processPayment(amount);
+}
+
+
+const internalProcessor = new PaymentProcessor();
+payOrder(internalProcessor, 100);
+
+
 const legacy = new LegacyPaymentSystem();
-const processor = new PaymentProcessor(legacy);
-processor.pay(100);
+legacy.processPayment = legacy.makePayment.bind(legacy);
+payOrder(legacy, 150);
+
+
+const modernAPI = new ModernPaymentAPI();
+const adaptedModern = new ModernPaymentAdapter(modernAPI);
+payOrder(adaptedModern, 200);
